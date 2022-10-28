@@ -31,7 +31,7 @@
 #include <sys/stat.h> /* For the size of the file. , fstat */
 #include <sys/mman.h> /* mmap, MAP_PRIVATE */
 #include <vector>
-#include <elf.h>      // Elf64_Shdr
+#include "elf.h"      // Elf64_Shdr
 #include <fcntl.h>
 
 namespace elf_parser {
@@ -66,7 +66,7 @@ typedef struct {
 
 class Elf_parser {
     public:
-        Elf_parser (std::string &program_path): m_program_path{program_path} {   
+        Elf_parser (std::string &program_path): m_program_path(program_path) {   
             load_memory_map();
         }
         std::vector<section_t> get_sections();

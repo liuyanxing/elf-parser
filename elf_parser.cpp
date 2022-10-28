@@ -24,24 +24,29 @@
 using namespace elf_parser;
 
 std::vector<section_t> Elf_parser::get_sections() {
-    Elf64_Ehdr *ehdr = (Elf64_Ehdr*)m_mmap_program;
-    Elf64_Shdr *shdr = (Elf64_Shdr*)(m_mmap_program + ehdr->e_shoff);
-    int shnum = ehdr->e_shnum;
+    Elf64_Ehdr *ehdr = (Elf64_Ehdr*)m_mmap_program; // m_mmap_program是文件在内存中位置
+    // 获取段地址
+    Elf64_Shdr *shdr = (Elf64_Shdr*)(m_mmap_program + ehdr->e_shoff); // e_shoff 段在文件中的偏移位置
+    int shnum = ehdr->e_shnum; // e_shnum 段数量
 
+    // 字符串所在段
     Elf64_Shdr *sh_strtab = &shdr[ehdr->e_shstrndx];
+
+    // 字符串段地址
     const char *const sh_strtab_p = (char*)m_mmap_program + sh_strtab->sh_offset;
 
+    // 获取所有段
     std::vector<section_t> sections;
     for (int i = 0; i < shnum; ++i) {
         section_t section;
         section.section_index= i;
-        section.section_name = std::string(sh_strtab_p + shdr[i].sh_name);
+        section.section_name = std::string(sh_strtab_p + shdr[i].sh_name); // sh_name时段名字在strtab中的偏移位置
         section.section_type = get_section_type(shdr[i].sh_type);
-        section.section_addr = shdr[i].sh_addr;
-        section.section_offset = shdr[i].sh_offset;
-        section.section_size = shdr[i].sh_size;
-        section.section_ent_size = shdr[i].sh_entsize;
-        section.section_addr_align = shdr[i].sh_addralign; 
+        section.section_addr = shdr[i].sh_addr;  // 执行时虚拟地址
+        section.section_offset = shdr[i].sh_offset; // 在文件中的偏移地址
+        section.section_size = shdr[i].sh_size; // 段长度
+        section.section_ent_size = shdr[i].sh_entsize; // 如果是个表，则表示表里面的数目 Entry size if section holds table
+        section.section_addr_align = shdr[i].sh_addralign; // 对齐 
         
         sections.push_back(section);
     }
